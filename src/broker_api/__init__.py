@@ -10,4 +10,4 @@ interactive brokers RESTful API. The API can be used for both accessing market d
 __all__ = ["BrokerAPI"]
 
 
-from BrokerAPI import BrokerAPI
+from .BrokerAPI import BrokerAPI

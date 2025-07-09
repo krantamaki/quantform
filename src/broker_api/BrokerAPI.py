@@ -1,5 +1,5 @@
 """@package broker_api.BrokerAPI
-   @author Kasper Rantamäki
+@author Kasper Rantamäki
 Submodule contraining an abstract base class that standardizes the API interface used elsewhere in the platform
 """
 from abc import ABC, abstractmethod
@@ -8,7 +8,7 @@ import pandas as pd
 
 
 class BrokerAPI(ABC):
-  """Abstact base class providing a standardized interface that API classes must satisfy."""
+  """Abstract base class providing a standardized interface that API classes must satisfy."""
 
   @abstractmethod
   def __init__(self, **kwargs) -> None:
