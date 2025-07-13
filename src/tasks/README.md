@@ -1,0 +1,2 @@
+## Directory for holding possible task implementations
+Directory where the user is free to implement their own Task objects as to be ran with the Scheduler. These will not be added to the Git repository (although some other version control scheme is recommended)
