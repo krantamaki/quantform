@@ -7,6 +7,7 @@ An object that is constantly checking time and runs tasks as specified in the Ta
 from typing import List
 from copy import copy
 from datetime import datetime
+from queue import PriorityQueue  # Used to schedule stuff
 
 from .Task import Task
 

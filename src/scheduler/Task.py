@@ -78,4 +78,3 @@ class Task:
   def pool_size(self) -> Optional[int]:
     return self.__pool_size
 
-
