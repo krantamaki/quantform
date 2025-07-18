@@ -1,5 +1,5 @@
 # Ignore the possible strategies that have been implemented
-src/trading_strategy/*.py
+src/tasks/*.py
 
 # Ignore all executable files
 *.o
@@ -10,3 +10,6 @@ src/trading_strategy/*.py
 
 # Ignore all log files
 *.log
+
+# Ignore the virtual environment
+.venv
