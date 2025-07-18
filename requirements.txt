@@ -1,0 +1,16 @@
+# Needed math/data libraries
+pandas
+numpy
+
+# Used in the GUI
+plotly
+flask
+dash
+itables
+playsound
+
+# Used for some of the utilities like the Date class
+quantlib
+
+# Needed for building the quantform library
+setuptools
