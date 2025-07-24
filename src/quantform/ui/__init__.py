@@ -7,9 +7,10 @@ and open positions as well as some needed reports
 """
 
 
-__all__ = ["Site", "Page", "DashApp"]
+__all__ = ["Site", "Page", "DashApp", "trade_alert"]
 
 
 from .DashApp import DashApp
 from .Page import Page
 from .Site import Site
+from .trade_alert import trade_alert
