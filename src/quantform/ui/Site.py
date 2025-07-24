@@ -3,36 +3,36 @@
 Class implementation for a Flask based website with multiple different pages
 """
 from typing import List, Optional, Union
-from flask import Flask
-
-from .Page import Page
-from .DashApp import DashApp
+from flask import Flask, Blueprint
+from dash import Dash
 
 
 class Site:
-  """
-  TODO
+  """The website object
+  
+  A simple class for initializing a Flask website
   """
 
-  def __init__(self, pages: List[Union[Page, DashApp]]) -> None:
-    """
-    TODO
+  def __init__(self, pages: List[Union[Page, Dash]]) -> None:
+    """Constructor method
+    
+    Constructor method that stores the passed parameters as instance variables 
+    and initializes a Flask application with the given webpages
+    
+    @param pages          A list of page instances used in the 
+    @raises RuntimeError  Raised if an invalid page instance is passed
+    @return               None
     """
 
     self.__app   = Flask(__name__)
     self.__pages = pages
 
-    # Kind of a dangerous way of handling this, but makes the site very modular
     for page in self.__pages:
 
       # If the page is an instance of Page abstract class then the function that is used in routing
-      # is just the call method of the object
+      # is the call method of the object
       if issubclass(page, Page):
-        exec(f"""
-        self.__app.route({page.route}, methods={page.methods})
-        def {page.name}():
-          return {page()}
-        """)
+        self.__app.add_url_rule(page.route, view_func=page, methods=page.methods)
 
       # If the page is a Dash app then the app needs to be hosted by the main Flask website
       elif issubclass(page, DashApp):
@@ -45,7 +45,10 @@ class Site:
 
 
   def __call__(self) -> Flask:
-    """
-    TODO
+    """Call method
+    
+    Call method that returns the initialized Flask object
+    
+    @return  The Flask class instance
     """
     return self.__app
