@@ -137,6 +137,24 @@ class VaR:
     raise NotImplementedError("The quadratic model has not yet been implemented!")
 
 
+  def stressed_var(self, time_horizon: int, confidence_level: float, standard_deviation: float) -> float:
+    """Stressed linear model VaR
+
+    Linear model VaR measure with a given standard deviation. Can be used to test how the portfolio
+    would have fared, if it had a standard deviation other than the one calculated from historical
+    data.
+
+    @param time_horizon        The number of days 'N' over which the loss level is evaluated
+    @param confidence_level    The level 'X' corresponding to the (100-X)th percentile of the distribution of the loss in the
+                               value of the portfolio over the next 'N' days
+    @param standard_deviation  The given portfolio standard deviation
+    @return                    The value of the VaR measure
+    """
+    return sum(self.__data.iloc[-1, :].to_numpy()) * \
+           norm.cdf(1 - confidence_level, loc=0, scale=sqrt(standard_deviation)) * \
+           sqrt(standard_deviation * time_horizon) 
+
+
   def plot(self, model: Literal["historical", "linear", "quadratic"], time_horizon: int, n_levels: int, 
            level_range: Tuple[float, float] = (0., 1.), fig: Optional[plt.Figure] = None, ax: Optional[plt.Axes] = None, 
            linewidth: float = 1, label: str = '', show_fig_legend: bool = False, save_as: Optional[str] = None) -> plt.Figure:
