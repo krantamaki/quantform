@@ -2,7 +2,7 @@
 @author Kasper Rantamäki
 Submodule for a generic Monte Carlo pricer for various stochastic processes and boundary conditions
 """
-from typing import Callable, Optional, Tuple
+from typing import Callable, Optional, Tuple, Union
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -62,8 +62,9 @@ class MonteCarloPricer(EquityPricerABC):
     self.__simulation_paths = None
 
   
-  def __call__(self, report_date: QfDate, underlying_value: float, save_paths: Optional[bool] = False,
-               n_simulations: Optional[int] = 1000, n_steps: Optional[int] = 1000) -> float:
+  def __call__(self, report_date: QfDate, underlying_value: float, save_paths: bool = False, 
+               n_simulations: int = 1000, n_steps: int = 1000, return_estimate_error: bool = False, 
+               process_vol: float = None) -> Union[float, Tuple[float, float]]:
     """
     TODO
     """
@@ -75,7 +76,7 @@ class MonteCarloPricer(EquityPricerABC):
     simulation_paths   = [[] * n_simulations]
 
     for simulation_i in range(0, n_simulations):
-      for step_years, step_price in self.__price_process(underlying_value, years, n_steps):
+      for step_years, step_price in self.__price_process(underlying_value, years, n_steps, vol=process_vol):
 
         if save_paths:
           simulation_paths[simulation_i].append((step_years, step_price))
@@ -92,8 +93,14 @@ class MonteCarloPricer(EquityPricerABC):
 
     if save_paths:
       self.__simulation_paths = simulation_paths
+      
+    mean = np.mean(discounted_payoffs)
+    std  = np.std(discounted_payoffs)
+    
+    if return_estimate_error:
+      return (mean, std / np.sqrt(n_simulations))
         
-    return np.mean(discounted_payoffs)
+    return mean
 
 
   def __discount(self, time_to_maturity: float, cashflow: float) -> float:
@@ -120,6 +127,57 @@ class MonteCarloPricer(EquityPricerABC):
         return (False, self.__upper_boundary(years)[1])
 
     return (True, None)
+  
+  
+  def delta(self, report_date: QfDate, underlying_value: float, difference: float = 1e-6,
+            n_simulations: int = 1000, n_steps: int = 1000, return_estimate_error: bool = False) -> Union[float, Tuple[float, float]]:
+    """
+    
+    """
+    
+    if return_estimate_error:
+      forward  = self(report_date, underlying_value + difference / 2, n_simulations=n_simulations, n_steps=n_steps, return_estimate_error=True)
+      backward = self(report_date, underlying_value - difference / 2, n_simulations=n_simulations, n_steps=n_steps, return_estimate_error=True)
+      return ((forward[0] - backward[0]) / difference, forward[0] + backward[0])
+      
+    return (self(report_date, underlying_value + difference / 2, n_simulations=n_simulations, n_steps=n_steps) - \ 
+            self(report_date, underlying_value - difference / 2, n_simulations=n_simulations, n_steps=n_steps)) \ / 
+           difference
+    
+    
+  def vega(self, report_date: QfDate, underlying_value: float, difference: float = 1e-6,
+          n_simulations: int = 1000, n_steps: int = 1000, return_estimate_error: bool = False) -> Union[float, Tuple[float, float]]:
+    """
+    
+    """
+
+    vol = self.__price_process.volatility
+    
+    if return_estimate_error:
+        forward  = self(report_date, underlying_value, n_simulations=n_simulations, n_steps=n_steps, return_estimate_error=True, process_vol=vol + difference / 2)
+        backward = self(report_date, underlying_value, n_simulations=n_simulations, n_steps=n_steps, return_estimate_error=True, process_vol=vol - difference / 2)
+        return ((forward[0] - backward[0]) / difference, forward[1] + backward[1])
+        
+      return (self(report_date, underlying_value, n_simulations=n_simulations, n_steps=n_steps, process_vol=vol + difference / 2) - \ 
+              self(report_date, underlying_value, n_simulations=n_simulations, n_steps=n_steps, process_vol=vol - difference / 2)) \ / 
+            difference
+    
+
+  def gamma(self, report_date: QfDate, underlying_value: float, difference: float = 1e-6,
+            n_simulations: int = 1000, n_steps: int = 1000, return_estimate_error: bool = False) -> Union[float, Tuple[float, float]]:
+    """
+    
+    """
+    if return_estimate_error:
+        forward  = self(report_date, underlying_value + difference, n_simulations=n_simulations, n_steps=n_steps, return_estimate_error=True)
+        backward = self(report_date, underlying_value - difference, n_simulations=n_simulations, n_steps=n_steps, return_estimate_error=True)
+        central  = self(report_date, underlying_value, n_simulations=n_simulations, n_steps=n_steps, return_estimate_error=True)
+        return ((forward[0] - 2 * central[0] +  backward[0]) / difference ** 2, forward[1] + backward[1] + 2 * central[1] )
+        
+      return (self(report_date, underlying_value + difference, n_simulations=n_simulations, n_steps=n_steps) - \ 
+              2 * self(report_date, underlying_value, n_simulations=n_simulations, n_steps=n_steps)) + \
+              self(report_date, underlying_value - difference, n_simulations=n_simulations, n_steps=n_steps) / \
+            difference ** 2
 
 
   def plot_simulation_paths(self) -> plt.Figure:
