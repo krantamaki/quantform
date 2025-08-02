@@ -39,7 +39,7 @@ class CurveABC(ABC):
 
   def plot(self, n_points: int, value_range: Optional[Tuple[float, float]], fig: Optional[plt.Figure] = None, 
            ax: Optional[plt.Axes] = None, linewidth: float = 1, label: str = '', show_fig_legend: bool = False,
-           save_as: Optional[str] = None, ) -> plt.Figure:
+           save_as: Optional[str] = None, **kwargs) -> plt.Figure:
     """Plotting function
     
     Function for plotting the curve on a given interval
@@ -56,6 +56,7 @@ class CurveABC(ABC):
     @param show_fig_legend  Boolean flag specifying if the legend is shown on the figure. Optional, defaults to False
     @param save_as          The path (as a str object) specifying the path to which the figure is saved. Optional,
                             defaults to None i.e. the figure is not saved.
+    @param **kwargs         Additional keyword arguments to be passed to the plotting function
     @return                 The Figure object with the curve plotted on it
     """
     
@@ -66,12 +67,12 @@ class CurveABC(ABC):
     yy = np.array([self(x) for x in xx])
 
     if fig is None:
-      fig = plt.figure(figsize=(12, 6))
+      fig = plt.figure(figsize=(7, 5))
 
     if ax is not None:
-      ax.plot(xx, yy, linewidth=linewidth, label=label)
+      ax.plot(xx, yy, linewidth=linewidth, label=label, **kwargs)
     else:
-      plt.plot(xx, yy, linewidth=linewidth, label=label)
+      plt.plot(xx, yy, linewidth=linewidth, label=label, **kwargs)
 
     if show_fig_legend:
       fig.legend()
