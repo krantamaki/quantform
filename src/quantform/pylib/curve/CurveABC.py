@@ -1,4 +1,4 @@
-"""@package quantform.pylib.CurveABC
+"""@package quantform.pylib.curve.CurveABC
 @author Kasper Rantamäki
 Submodule with a generic abstract base class for various curves
 """
@@ -17,8 +17,8 @@ class CurveABC(ABC):
     
     Call method that returns the value on the curve for a given point
     
-    @param val  The value for which the curve point is wanted
-    @return     The point on the curve
+    @param val  The point for which the value on the curve is wanted
+    @return     The value on the curve
     """
     pass
   
