@@ -1,4 +1,4 @@
-"""@package broker_api.BrokerAPI
+"""@package quantform.broker_api.BrokerAPI
 @author Kasper Rantamäki
 Submodule contraining an abstract base class that standardizes the API interface used elsewhere in the platform
 """
