@@ -22,8 +22,22 @@ class CurveABC(ABC):
     """
     pass
   
+  
+  @abstractmethod
+  @property
+  def max(self) -> float:
+    """The maximum value for which the curve is defined"""
+    pass
+  
+  
+  @abstractmethod
+  @property
+  def min(self) -> float:
+    """The minimum value for which the curve is defined"""
+    pass
+  
 
-  def plot(self, n_points: int, value_range: Tuple[float, float], fig: Optional[plt.Figure] = None, 
+  def plot(self, n_points: int, value_range: Optional[Tuple[float, float]], fig: Optional[plt.Figure] = None, 
            ax: Optional[plt.Axes] = None, linewidth: float = 1, label: str = '', show_fig_legend: bool = False,
            save_as: Optional[str] = None, ) -> plt.Figure:
     """Plotting function
@@ -31,7 +45,8 @@ class CurveABC(ABC):
     Function for plotting the curve on a given interval
     
     @param n_points         The number of points on which the curve is evaluated
-    @param value_range      The range of value on which the curve is evaluated
+    @param value_range      The range of value on which the curve is evaluated. Optional, defaults to using the 
+                            minimum and maximum values for which the curve is defined.
     @param fig              A pyplot Figure object to which the plot is to be added. Optional, defaults to 
                             None i.e. new Figure object is created
     @param ax               A pyplot Axes object specifying to which the plot is added. Optional, defaults to
@@ -45,7 +60,7 @@ class CurveABC(ABC):
     """
     
     if value_range is None:
-      value_range = (min(self.strikes()), max(self.strikes()))
+      value_range = (self.min, self.max)
 
     xx = np.linspace(value_range[0], value_range[1], n_points)
     yy = np.array([self(x) for x in xx])
