@@ -20,14 +20,16 @@ class GenericCurve(CurveABC):
     object. Additionally, if wanted runs a Gaussian filter on the datapoints to smooth the data.
     
     @param x_values               The x values for the datapoints
-    @param x_values               The y values for the datapoints
+    @param y_values               The y values for the datapoints
     @param apply_gaussian_filter  Boolean flag specifying if a Gaussian filter should be applied to the datapoints.
                                   Optional, defaults to False
     @param gaussian_filter_sd     The standard deviation for the Gaussian filter if applied. Optional, defaults to 2
+    @raises AssertionError        Raised if the dimensions of x and y arrays don't match
     @return                       None
     """
 
     assert len(x_values) == len(y_values), f"The arrays must have the same dimensions! ({len(x_values)} != {len(y_values)})"
+
 
     self.__x = x_values
     self.__y = y_values
@@ -37,11 +39,11 @@ class GenericCurve(CurveABC):
     if apply_gaussian_filter:
       self.__y = gaussian_filter1d(self.__y, self.__gaussian_sd)
     
-    self.__cubic_spline = CubicSpline(self.__x, self.__y)
+    self.__interpolator = CubicSpline(self.__x, self.__y)
 
 
   def __call__(self, x: float) -> float:
-    return self.__cubic_spline(x)
+    return self.__interpolator(x)
 
 
   @property
