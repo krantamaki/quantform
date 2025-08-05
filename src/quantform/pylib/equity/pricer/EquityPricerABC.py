@@ -13,7 +13,7 @@ class EquityPricerABC(ABC):
   """
 
   @abstractmethod
-  def __call__(self, report_date: QfDate, underlying_value: float, *args: List[any], **kwargs: Dict[any]):
+  def __call__(self, underlying_value: float, report_date: QfDate, *args: List[any], **kwargs: Dict[any]):
     """
     TODO
     """
@@ -21,7 +21,7 @@ class EquityPricerABC(ABC):
   
 
   @abstractmethod
-  def delta(self, report_date: QfDate, underlying_value: float, *args: List[any], **kwargs: Dict[any]) -> float:
+  def delta(self, underlying_value: float, report_date: QfDate, *args: List[any], **kwargs: Dict[any]) -> float:
     """
     TODO
     """
@@ -29,7 +29,7 @@ class EquityPricerABC(ABC):
   
 
   @abstractmethod
-  def vega(self, report_date: QfDate, underlying_value: float, *args: List[any], **kwargs: Dict[any]) -> float:
+  def vega(self, underlying_value: float, report_date: QfDate, *args: List[any], **kwargs: Dict[any]) -> float:
     """
     TODO
     """
@@ -37,10 +37,9 @@ class EquityPricerABC(ABC):
     
 
   @abstractmethod
-  def gamma(self, report_date: QfDate, underlying_value: float, *args: List[any], **kwargs: Dict[any]) -> float:
+  def gamma(self, underlying_value: float, report_date: QfDate, *args: List[any], **kwargs: Dict[any]) -> float:
     """
     TODO
     """
     pass
     
-

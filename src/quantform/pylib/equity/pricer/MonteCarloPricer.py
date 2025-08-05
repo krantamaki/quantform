@@ -9,20 +9,8 @@ import matplotlib.pyplot as plt
 from .EquityPricerABC import EquityPricerABC
 from ..stochastic_process.EquityPriceProcessABC import EquityPriceProcessABC
 from ...QfDate import QfDate
-
-
-def __trivial_lower_boundary(time_to_maturity: float) -> Tuple[float, float]:
-  """
-  
-  """
-  return (0., 0.)
-
-
-def __trivial_expiration_boundary(equity_price: float) -> float:
-  """
-  
-  """
-  return equity_price
+from ..boundaries import trivial_lower_boundary, trivial_expiration_boundary
+from ..utils import discount
 
 
 class MonteCarloPricer(EquityPricerABC):
@@ -40,8 +28,8 @@ class MonteCarloPricer(EquityPricerABC):
     self.__price_process = price_process
     self.__rf            = risk_free_rate
 
-    if expiration_boundary is not None:
-      assert maturity_date is not None, "If the expiration boundary is defined, the maturity date must be as well!"
+    if maturity_date is not None:
+      assert expiration_boundary is not None, "If the maturity date is defined the expiration boundary should be as well!"
 
     if expiration_boundary is None:
       assert upper_boundary is not None or lower_boundary is not None, "At least one boundary must be defined!"
@@ -82,13 +70,13 @@ class MonteCarloPricer(EquityPricerABC):
           simulation_paths[simulation_i].append((step_years, step_price))
 
         if step_years >= years:
-          discounted_payoffs.append(self.__discount(step_years, self.__expiration_boundary(step_price)))
+          discounted_payoffs.append(self.discount(step_years, self.__expiration_boundary(step_price)))
           break
         
         in_bounds, payoff = self.__in_bounds(step_years, step_price)
 
         if not in_bounds:
-          discounted_payoffs.append(self.__discount(step_years, payoff))
+          discounted_payoffs.append(self.discount(step_years, payoff))
           break
 
     if save_paths:
@@ -101,13 +89,6 @@ class MonteCarloPricer(EquityPricerABC):
       return (mean, std / np.sqrt(n_simulations))
         
     return mean
-
-
-  def __discount(self, time_to_maturity: float, cashflow: float) -> float:
-    """
-    
-    """
-    return cashflow * np.exp(-self.__rf * time_to_maturity)
 
 
   def __in_bounds(self, years: float, price: float) -> Tuple[bool, Optional[float]]:
