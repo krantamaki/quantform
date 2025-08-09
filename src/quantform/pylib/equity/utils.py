@@ -2,7 +2,7 @@
 @author Kasper Rantamäki
 TODO
 """
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Callable
 import numpy as np
 
 from .QfDate import QfDate
@@ -18,7 +18,6 @@ def discount(cashflow: float, time_to_maturity: float, rf: float) -> float:
   return cashflow * np.exp(-rf * time_to_maturity)
   
 
-# Function for parsing the option contracts name into it's constituent parts
 def parse_option_id(contract_id: str) -> Tuple[str, QfDate, Literal['Call', 'Put'], float]:
   """
   TODO
@@ -57,4 +56,22 @@ def form_option_id(underlying: str, maturity_date: QfDate, option_type: Literal[
   contract_name = f"{maturity_date.year - 2000}{str(maturity_date.month).rjust(2, '0')}{str(maturity_date.day).rjust(2, '0')}" + contract_name
 
   return underlying + contract_name
+
+
+def bisection_method(func: Callable, lower: float, upper: float, tol: float = 1e-6) -> float:
+
+  assert upper > lower, f"Upper bound should be greater than lower bound! ({upper} !> {lower})"
+  assert func(upper) > 0 and func(lower) < 0, f"The upper and lower bound should get different signs from function 'func'! (sign({func(upper)}) == sign({func(lower)}))"
+  
+  while upper - lower > tol:
+      mid = (upper + lower) / 2.
+      
+      if func(mid) < 0.:
+          lower = mid
+      elif func(mid) > 0:
+          upper = mid
+      else:
+          return mid
+      
+  return (upper + lower) / 2.
 
