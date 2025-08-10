@@ -49,22 +49,26 @@ Before the setup some steps need to be taken. The commands in the instructions s
 
 These steps need to be taken each time modifications are made to the source code. Once again these instructions are assumed to be ran from the root quantform directory. 
 
-0. Fill the config file _src/config.yaml_. Note that the file can be copied and the sensitive information stored elsewhere (in fact this is recommended so that it doesn't accidentally end up being added to GitHub).
+0. Fill the config file _src/config.yaml_. Note that the file can be copied and the sensitive information stored elsewhere (in fact this is recommended so that it doesn't accidentally end up being added to GitHub). Also remember to activate the virtual environment by running the command 
+
+    ```
+    source .venv/bin/activate
+    ```
 
 1. Install the _quantform_ library using pip. By using the _--editable_ flag changes in the Python code are will be reflected in the installed package without a need for a reinstall. However, for the changes in the C++ code to take effect the install needs to be redone. 
 
     ```
-    python3 -m pip install --editable src
+    python3.12 -m pip install --editable src/.
     ```
 
 2. Run the tests to validate that nothing has been broken
 
     ```
-    python3 src/tests.py
+    python3.12 src/tests.py
     ```
 
 3. Run the _main.py_ file. Note that the main file needs to be filled before running it or it will raise a _NotImplementedError_. Here _\<path to config file\>_ is used to refer to the location where the config file filled in step 0 is stored.
 
     ```
-    python3 src/main.py -c <path to config file>
+    python3.12 src/main.py -c <path to config file>
     ```

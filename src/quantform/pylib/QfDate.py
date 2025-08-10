@@ -5,16 +5,16 @@ Module for QuantForm date class
 from __future__ import annotations
 from typing import Literal, Callable
 from math import ceil
-import quantlib as ql
+import QuantLib as ql
 
 
 __all__ = ["QfDate", "comparable"]
 
 
 # Map from the name of the calendar to the ql.Calendar object
-__calendar_map = {
+_calendar_map = {
   "Eurex":     ql.Germany(ql.Germany.Eurex),
-  "Frankfurt": ql.Germany(ql.Germany.Frankfurt),
+  "Frankfurt": ql.Germany(ql.Germany.FrankfurtStockExchange),
   "Xetra":     ql.Germany(ql.Germany.Xetra),
   "London":    ql.UnitedKingdom(ql.UnitedKingdom.Exchange),
   "NYSE":      ql.UnitedStates(ql.UnitedStates.NYSE)
@@ -22,7 +22,7 @@ __calendar_map = {
 
 
 # Map from the convention name to the function for calculating the time delta
-__convention_map = {
+_convention_map = {
   "30/360": lambda end, start: (360 * (end.year - start.year) + 30 * (end.month - start.month) + (end.day - start.day)) / 360,
   "ACT/365": lambda end, start: start.days_until(end) / 365,
   "ACT/360": lambda end, start: start.days_until(end) / 360,
@@ -31,7 +31,7 @@ __convention_map = {
 
 
 # Map from the convention name to the number of days in the year
-__day_count_map = {
+_day_count_map = {
   "30/360": 360,
   "ACT/365": 365,
   "ACT/360": 360,
@@ -65,17 +65,17 @@ class QfDate:
     TODO
     """
     
-    assert calendar in list(__calendar_map.keys()), f"Invalid calendar given! ({calendar} not in {list(__calendar_map.keys())})"
-    assert convention in list(__convention_map.keys()), f"Invalid day count convention given! ({convention} not in {list(__convention_map.keys())})"
+    assert calendar in list(_calendar_map.keys()), f"Invalid calendar given! ({calendar} not in {list(_calendar_map.keys())})"
+    assert convention in list(_convention_map.keys()), f"Invalid day count convention given! ({convention} not in {list(_convention_map.keys())})"
     
     self.__year            = year
     self.__month           = month
     self.__day             = day
     self.__calendar_name   = calendar
-    self.__calendar        = __calendar_map[calendar]
+    self.__calendar        = _calendar_map[calendar]
     self.__convention_name = convention
-    self.__convention      = __convention_map[calendar]
-    self.__ql_date         = ql.Date(year, month, day)
+    self.__convention      = _convention_map[convention]
+    self.__ql_date         = ql.Date(day, month, year)
     self.__serial_number   = self.__ql_date.serialNumber()
     
     
@@ -95,10 +95,10 @@ class QfDate:
     
     # The given parameter num is assumed to hold for the prevailing convention. Thus, for example under Business/252 convention if num
     # is 252 the calculated date should be a full year (365 days) in the future under normal day count convention.
-    normalised_num = ceil(num * (365 / __day_count_map[self.__convention_name]), 0)
+    normalised_num = ceil(num * (365. / _day_count_map[self.__convention_name]))
     new_ql_date = ql.Date(self.__serial_number + normalised_num)
     
-    return QfDate(new_ql_date.year(), new_ql_date.month(), new_ql_date.day(), calendar=self.__calendar_name, convention=self.__convention_name)
+    return QfDate(new_ql_date.year(), new_ql_date.month(), new_ql_date.dayOfMonth(), calendar=self.__calendar_name, convention=self.__convention_name)
   
   
   def __sub__(self, num: int) -> QfDate:
@@ -110,18 +110,18 @@ class QfDate:
   
   # Multiplication and division return a new date where the day has been changed by the amount 'num' * 'n_days_in_year' (under the given day count convention)
   # Multiplication goes forward in time and division backwards
-  def __mult__(self, num: float) -> QfDate:
+  def __mul__(self, num: float) -> QfDate:
     """
     TODO
     """
-    return self + num * __day_count_map[self.__convention_name]
+    return self + num * _day_count_map[self.__convention_name]
   
   
   def __div__(self, num: float) -> QfDate:
     """
     TODO
     """
-    return self - num * __day_count_map[self.__convention_name]
+    return self - num * _day_count_map[self.__convention_name]
   
   
   @comparable
@@ -131,12 +131,14 @@ class QfDate:
   
   @comparable
   def __gt__(self, other: QfDate) -> bool:
-    return (self.year > other.year) and (self.month > other.month) and (self.day > other.day)
+    return ((self.year == other.year) and (self.month == other.month) and (self.day > other.day)) or \
+           ((self.year == other.year) and (self.month > other.month)) or \
+           (self.year > other.year)
   
   
   @comparable
   def __lt__(self, other: QfDate) -> bool:
-    return (self.year < other.year) and (self.month < other.month) and (self.day < other.day)
+    return not (self >= other)
   
   
   @comparable
@@ -174,6 +176,14 @@ class QfDate:
     return self.__convention_name
   
   
+  def date_shift(self, num: int) -> QfDate:
+    """
+    TODO
+    """
+    new_ql_date = ql.Date(self.__serial_number + num)
+    return QfDate(new_ql_date.year(), new_ql_date.month(), new_ql_date.dayOfMonth(), calendar=self.__calendar_name, convention=self.__convention_name)
+  
+  
   @comparable
   def timedelta(self, other_date: QfDate) -> float:
     """
@@ -181,7 +191,7 @@ class QfDate:
     """
     
     if self > other_date:
-      return self.__convention(self, other_date)
+      return -self.__convention(self, other_date)
     
     return self.__convention(other_date, self)
   
@@ -212,12 +222,14 @@ class QfDate:
     assert self <= other_date, f"The given date cannot be less than the instance date! ({self} < {other_date})"
     
     prod_day_count = 0
-    date = self  # Double check
+    
+    if self.is_prod_date():
+      prod_day_count += 1
+      
+    date = self.next_prod_date()
     
     while date < other_date:
-      if date.is_prod_date():
-        prod_day_count += 1
-      
+      prod_day_count += 1
       date = date.next_prod_date()
       
     return prod_day_count
@@ -243,10 +255,10 @@ class QfDate:
     """
     TODO
     """
-    next_date = self + 1
+    next_date = self.date_shift(1)
     
     while not next_date.is_prod_date():
-      next_date = next_date + 1
+      next_date = next_date.date_shift(1)
       
     return next_date
   
@@ -255,10 +267,10 @@ class QfDate:
     """
     TODO
     """
-    prev_date = self - 1
+    prev_date = self.date_shift(-1)
     
     while not prev_date.is_prod_date():
-      prev_date = prev_date - 1
+      prev_date = prev_date.date_shift(-1)
       
     return prev_date
   
