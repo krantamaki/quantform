@@ -17,29 +17,30 @@ class CurveABC(ABC):
     
     Call method that returns the value on the curve for a given point
     
-    @param val  The point for which the value on the curve is wanted
-    @return     The value on the curve
+    @param val              The point for which the value on the curve is wanted
+    @raises AssertionError  Raised if the given point is beyond the interpolated range
+    @return                 The value on the curve
     """
     pass
   
   
-  @abstractmethod
   @property
+  @abstractmethod
   def max(self) -> float:
     """The maximum value for which the curve is defined"""
     pass
   
   
-  @abstractmethod
   @property
+  @abstractmethod
   def min(self) -> float:
     """The minimum value for which the curve is defined"""
     pass
   
 
   def plot(self, n_points: int, value_range: Optional[Tuple[float, float]], fig: Optional[plt.Figure] = None, 
-           ax: Optional[plt.Axes] = None, linewidth: float = 1, label: str = '', show_fig_legend: bool = False,
-           save_as: Optional[str] = None, **kwargs) -> plt.Figure:
+           ax: Optional[plt.Axes] = None, fmt: str = "", linewidth: float = 1.5, label: str = '', alpha: float = 1.,
+           show_fig_legend: bool = False, save_as: Optional[str] = None, **kwargs) -> plt.Figure:
     """Plotting function
     
     Function for plotting the curve on a given interval
@@ -51,8 +52,10 @@ class CurveABC(ABC):
                             None i.e. new Figure object is created
     @param ax               A pyplot Axes object specifying to which the plot is added. Optional, defaults to
                             None i.e. no Axes object is used
-    @param linewidth        The linewidth for the line plot. Optional, defaults to 1
+    @param fmt              The linestyle specifier (e.g. 'k--'). Optional, defaults to '' (empty string) 
+    @param linewidth        The linewidth for the line plot. Optional, defaults to 2
     @param label            The label for the curve. Optional, defaults to '' (empty string)
+    @param alpha            The alpha (transparency) for the line
     @param show_fig_legend  Boolean flag specifying if the legend is shown on the figure. Optional, defaults to False
     @param save_as          The path (as a str object) specifying the path to which the figure is saved. Optional,
                             defaults to None i.e. the figure is not saved.
@@ -70,9 +73,9 @@ class CurveABC(ABC):
       fig = plt.figure(figsize=(7, 5))
 
     if ax is not None:
-      ax.plot(xx, yy, linewidth=linewidth, label=label, **kwargs)
+      ax.plot(xx, yy, fmt, linewidth=linewidth, alpha=alpha, label=label, **kwargs)
     else:
-      plt.plot(xx, yy, linewidth=linewidth, label=label, **kwargs)
+      plt.plot(xx, yy, fmt, linewidth=linewidth, alpha=alpha, label=label, **kwargs)
 
     if show_fig_legend:
       fig.legend()
