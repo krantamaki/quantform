@@ -4,10 +4,8 @@ Module with lots of utility classes for quantitative finance
 """
 
 
-__all__ = ["curve", "date", "equity", "fixed_income"]
+__all__ = ["QfDate", "comparable"]
 
 
-from . import curve
-from . import date
-from . import equity
-from . import fixed_income
+from .QfDate import QfDate, comparable
+
