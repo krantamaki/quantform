@@ -4,6 +4,7 @@ Submodule with a generic abstract base class for various surfaces
 """
 from typing import Optional, Tuple
 from abc import ABC, abstractmethod
+from itertools import product
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
@@ -53,7 +54,7 @@ class SurfaceABC(ABC):
   
 
   def plot(self, n_points: Tuple[int, int], value_range: Optional[Tuple[Tuple[float, float], Tuple[float, float]]] = None, 
-           plot_heatmap: bool = True, cmap_name: str = 'coolwarm' fig: Optional[plt.Figure] = None, ax: Optional[plt.Axes] = None, 
+           plot_heatmap: bool = True, cmap_name: str = 'coolwarm', fig: Optional[plt.Figure] = None, ax: Optional[plt.Axes] = None, 
            linewidth: float = 1, label: str = '', show_fig_legend: bool = False, save_as: Optional[str] = None, **kwargs) -> plt.Figure:
     """Plotting function
     

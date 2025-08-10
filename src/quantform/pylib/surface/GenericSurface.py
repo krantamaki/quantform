@@ -34,8 +34,8 @@ class GenericSurface(SurfaceABC):
     tmp_points = np.array(points)
     tmp_values = np.array(values)
     
-    assert tmp_points.shape[1] == 2 f"The point array must be a list of tuples! ({tmp_points.shape[1]} != 2)"
-    assert len(tmp_values.shape) == 1 f"The value array must be a one dimensional Numpy array! ({len(tmp_values.shape)} != 1)"
+    assert tmp_points.shape[1] == 2, f"The point array must be a list of tuples! ({tmp_points.shape[1]} != 2)"
+    assert len(tmp_values.shape) == 1, f"The value array must be a one dimensional Numpy array! ({len(tmp_values.shape)} != 1)"
 
     # Order the points first by rows and second by columns
     tmp_arr = np.append(tmp_points, tmp_values, 1)
@@ -56,7 +56,7 @@ class GenericSurface(SurfaceABC):
       cur_row_arr     = []
       
       for i, point in enumerate(self.__points):
-        row, col = *point
+        row, col = point[0], point[1]
         
         if row > cur_row:
           values_reshapen.append(cur_row_arr)

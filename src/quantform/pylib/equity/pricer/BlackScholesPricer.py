@@ -75,7 +75,7 @@ class BlackScholesPricer(EquityPricerABC):
   def gamma(self, underlying_value: float, report_date: QfDate) -> float:
     return self.__strike * discount(self.__rf, report_date.timedelta(self.__maturity_date)) * \
            norm.pdf(self.d_minus(underlying_value, report_date)) / (underlying_value ** 2 * self.__vol * \
-           np.sqrt(report_date.timedelta(self.__maturity_date))
+           np.sqrt(report_date.timedelta(self.__maturity_date)))
                                                
   
   def implied_volatility(self, market_price: float, underlying_value: float, report_date: QfDate) -> float:
@@ -92,15 +92,15 @@ class BlackScholesPricer(EquityPricerABC):
     diff_func = self.__diff_factory(market_price, underlying_value, report_date)
     
     lower = 1e-6
-    assert diff(lower) < 0, f"Implied volatility can't be calculated as the lower bound difference is not negative! (Lower bound is {diff(lower)})"
+    assert diff_func(lower) < 0, f"Implied volatility can't be calculated as the lower bound difference is not negative! (Lower bound is {diff_func(lower)})"
 
     upper = 0.01
-    while diff(upper) < 0 and upper < 100:
+    while diff_func(upper) < 0 and upper < 100:
         upper += 0.1
 
     assert upper < 100, "Implied volatility can't be calculated as the difference is not positive for any upped bound!"
 
-    implied_vol = bisection_method(diff, lower, upper)
+    implied_vol = bisection_method(diff_func, lower, upper)
 
     return implied_vol
   
@@ -125,7 +125,7 @@ class BlackScholesPricer(EquityPricerABC):
            report_date.timedelta(self.__maturity_date))
 
 
-  def d_minus(self, underlying_value: float, report_date: datetime, vol: float = None) -> float:
+  def d_minus(self, underlying_value: float, report_date: QfDate, vol: float = None) -> float:
     """The \f$d_-\f$ argument for the Black-Scholes formula
     
     @param underlying_value  The value of the underlying security
