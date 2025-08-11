@@ -38,11 +38,12 @@ class GenericSurface(SurfaceABC):
     assert len(tmp_values.shape) == 1, f"The value array must be a one dimensional Numpy array! ({len(tmp_values.shape)} != 1)"
 
     # Order the points first by rows and second by columns
-    tmp_arr = np.append(tmp_points, tmp_values, 1)
-    tmp_arr = sorted(tmp_arr, key = lambda row: (row[0], row[1]))
+    tmp_arr = np.hstack((tmp_points, tmp_values.reshape(-1, 1)))
+    
+    tmp_arr = np.array(sorted(tmp_arr, key = lambda row: (row[0], row[1])))
 
-    self.__points = tmp_arr[0:1, :]
-    self.__values = tmp_arr[2, :]
+    self.__points = tmp_arr[:, 0:2]
+    self.__values = tmp_arr[:, 2]
     
     self.__max = np.max(self.__points, axis = 0)
     self.__min = np.min(self.__points, axis = 0)
@@ -52,26 +53,32 @@ class GenericSurface(SurfaceABC):
     if apply_gaussian_filter:
       # Reshape the values into a multidimensional array based on the row values
       values_reshapen = []
-      cur_row         = 0
+      cur_row         = self.__points[0, 0]
       cur_row_arr     = []
       
       for i, point in enumerate(self.__points):
-        row, col = point[0], point[1]
+        row, _ = point[0], point[1]
         
         if row > cur_row:
           values_reshapen.append(cur_row_arr)
           cur_row_arr = [self.__values[i]]
+          cur_row = row
           
         else:
           cur_row_arr.append(self.__values[i])
-    
+          
+      values_reshapen.append(cur_row_arr)
+          
       # Apply the Gaussian filter to the reshapen array and flatten the result
       self.__values = gaussian_filter(np.array(values_reshapen), self.__gaussian_sd).flatten()
+      
+      print(len(self.__values))
     
     self.__interpolator = CloughTocher2DInterpolator(self.__points, self.__values)
 
 
   def __call__(self, point: Tuple[float, float]) -> float:
+    assert (np.array(point) <= self.__max).all() and (np.array(point) >= self.__min).all(), f"Given point is out of range! ({point} not in range from {self.__min} to {self.__max})"
     return self.__interpolator(point)
 
 

@@ -25,29 +25,29 @@ class SurfaceABC(ABC):
     pass
   
   
-  @abstractmethod
   @property
+  @abstractmethod
   def max_x(self) -> float:
     """The maximum 'x' value for which the surface is defined"""
     pass
   
   
-  @abstractmethod
   @property
+  @abstractmethod
   def min_x(self) -> float:
     """The minimum 'x' value for which the surface is defined"""
     pass
   
   
-  @abstractmethod
   @property
+  @abstractmethod
   def max_y(self) -> float:
     """The maximum 'y' value for which the surface is defined"""
     pass
   
   
-  @abstractmethod
   @property
+  @abstractmethod
   def min_y(self) -> float:
     """The minimum 'y' value for which the surface is defined"""
     pass
