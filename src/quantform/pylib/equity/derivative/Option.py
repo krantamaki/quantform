@@ -2,12 +2,13 @@
 @author Kasper Rantamäki
 Submodule with a class implementation for a generic European option
 """
+from __future__ import annotations
 import numpy as np
 from typing import Literal, Optional
 
 from .EquityDerivativeABC import EquityDerivativeABC
 from ...QfDate import QfDate
-from ..pricer import BlackScholesPricer
+from ..pricer import BlackScholesPricer, EquityPricerABC
 from ..utils import discount, form_option_id, parse_option_id
 
 
@@ -37,7 +38,7 @@ class Option(EquityDerivativeABC):
     """
     
     assert type.lower() in ["call", "put"], f"Invalid option type specified! ({type} not in ['Call', 'Put'])"
-    assert (volatility is not None) or (market_price is not None and underlying_value is not None and report_date is not None), "Either the volatility term or market price must be specified for proper pricer initialization!"
+    assert (volatility is not None) or ((market_price is not None) and (underlying_value is not None) and (report_date is not None)), "Either the volatility term or market price must be specified for proper pricer initialization!"
     
     self.__contract_id      = contract_id
     self.__underlying       = underlying
@@ -51,7 +52,7 @@ class Option(EquityDerivativeABC):
    
     match pricer.lower():
       case "blackscholes":
-        self.__pricer = BlackScholesPricer(self.__maturity_date, self.__strike, self.__risk_free_rate, self.__volatility,
+        self.__pricer = BlackScholesPricer(self.__maturity_date, self.__type, self.__strike, self.__risk_free_rate, self.__volatility,
                                            self.__market_price, underlying_value, report_date)
       case _:
         assert False, f"Invalid pricer name given! ({pricer} not in ['BlackScholes'])"
@@ -61,6 +62,36 @@ class Option(EquityDerivativeABC):
   def type(self) -> str:
     """The option type ('Call' or 'Put')"""
     return self.__type
+  
+  
+  @property
+  def contract_id(self) -> str:
+    return self.__contract_id
+  
+  
+  @property
+  def underlying(self) -> str:
+    return self.__underlying
+  
+  
+  @property
+  def maturity_date(self) -> Optional[QfDate]:
+    return self.__maturity_date
+  
+  
+  @property
+  def strike(self) -> Optional[float]:
+    return self.__strike
+  
+  
+  @property
+  def market_price(self) -> Optional[float]:
+    return self.__market_price
+  
+  
+  @property
+  def pricer(self) -> EquityPricerABC:
+    return self.__pricer
   
   
   def parity(self, underlying_value: float, report_date: QfDate) -> Option:
@@ -74,14 +105,16 @@ class Option(EquityDerivativeABC):
     """
     if self.type.lower() == "call":
       put_id = form_option_id(self.__underlying, self.__maturity_date, "Put", self.__strike)
-      return Option(put_id, *parse_option_id(put_id), self.__risk_free_rate, 
+      return Option(put_id, *parse_option_id(put_id, calendar=self.__maturity_date.calendar, convention=self.__maturity_date.convention), 
+                    self.__risk_free_rate, 
                     market_price = self(underlying_value, report_date) - discount(self.__risk_free_rate, report_date.timedelta(self.__maturity_date)) * (underlying_value - self.__strike),
                     underlying_value = underlying_value,
                     report_date = report_date)
                     
     else:
       call_id = form_option_id(self.__underlying, self.__maturity_date, "Call", self.__strike)
-      return Option(call_id, *parse_option_id(call_id), self.__risk_free_rate, 
+      return Option(call_id, *parse_option_id(call_id, calendar=self.__maturity_date.calendar, convention=self.__maturity_date.convention),
+                    self.__risk_free_rate, 
                     market_price = self(underlying_value, report_date) + discount(self.__risk_free_rate, report_date.timedelta(self.__maturity_date)) * (underlying_value - self.__strike),
                     underlying_value = underlying_value,
                     report_date = report_date)

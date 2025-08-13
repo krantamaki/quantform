@@ -35,7 +35,7 @@ class BlackScholesPricer(EquityPricerABC):
     @return                  None
     """
     
-    assert (volatility is not None) or (market_price is not None and underlying_value is not None and report_date is not None), "Either volatility or market parameters need to be defined!"
+    assert (volatility is not None) or ((market_price is not None) and (underlying_value is not None) and (report_date is not None)), "Either volatility or market parameters need to be defined!"
 
     self.__maturity_date = maturity_date
     self.__option_type   = type
@@ -62,6 +62,16 @@ class BlackScholesPricer(EquityPricerABC):
            discount(self.__rf, report_date.timedelta(self.__maturity_date)) -\
            norm.cdf(-self.d_plus(underlying_value, report_date, vol = vol)) * underlying_value
            
+           
+  def __str__(self) -> str:
+    """Simple string representation"""
+    return f"Black-Scholes {self.__option_type} Option Pricer"
+  
+  
+  def __repr__(self) -> str:
+    """Exhaustive string representation"""
+    return f"Black-Scholes Pricer\nOption Type: {self.__option_type}\nMaturity Date: {self.__maturity_date}\nStrike: {self.__strike}\nRisk-free Rate: {self.__rf}\nVolatility: {self.__vol}"
+  
   
   def delta(self, underlying_value: float, report_date: QfDate) -> float:
     return norm.cdf(self.d_plus(underlying_value, report_date))
@@ -89,7 +99,7 @@ class BlackScholesPricer(EquityPricerABC):
     @return                  The implied volatility
     """
     
-    diff_func = self.__diff_factory(market_price, underlying_value, report_date)
+    diff_func = self._diff_factory(market_price, underlying_value, report_date)
     
     lower = 1e-6
     assert diff_func(lower) < 0, f"Implied volatility can't be calculated as the lower bound difference is not negative! (Lower bound is {diff_func(lower)})"

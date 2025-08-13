@@ -25,9 +25,21 @@ class EquityPricerABC(ABC):
     """
     pass
   
+  
+  @abstractmethod
+  def __str__(self) -> str:
+    """Simple string representation"""
+    pass
+  
+  
+  @abstractmethod
+  def __repr__(self) -> str:
+    """Exhaustive string representation"""
+    pass
+  
 
   @abstractmethod
-  def delta(self, underlying_value: float, report_date: QfDate, *args: List[any], **kwargs: Dict[any]) -> float:
+  def delta(self, underlying_value: float, report_date: QfDate, *args: List[any], **kwargs: Dict[any, any]) -> float:
     """The delta of the derivative
     
     Calculates the delta (sensitivity to the value of the underlying) for the derivative
@@ -42,7 +54,7 @@ class EquityPricerABC(ABC):
   
 
   @abstractmethod
-  def vega(self, underlying_value: float, report_date: QfDate, *args: List[any], **kwargs: Dict[any]) -> float:
+  def vega(self, underlying_value: float, report_date: QfDate, *args: List[any], **kwargs: Dict[any, any]) -> float:
     """The vega of the derivative
     
     Calculates the vega (sensitivity to the volatility) for the derivative
@@ -57,7 +69,7 @@ class EquityPricerABC(ABC):
     
 
   @abstractmethod
-  def gamma(self, underlying_value: float, report_date: QfDate, *args: List[any], **kwargs: Dict[any]) -> float:
+  def gamma(self, underlying_value: float, report_date: QfDate, *args: List[any], **kwargs: Dict[any, any]) -> float:
     """The gamma of the derivative
     
     Calculates the gamma (sensitivity to the delta) for the derivative
@@ -71,8 +83,10 @@ class EquityPricerABC(ABC):
     pass
     
     
-  def __diff_factory(self, market_price: float, underlying_value: float, report_date: QfDate) -> Callable:
+  def _diff_factory(self, market_price: float, underlying_value: float, report_date: QfDate) -> Callable:
     """Method for generating a function that gives the difference between the model price and market price
+    
+    Note that this method should only be accessed by implied volatility methods and similar.
     
     @param market_price      The market price for the derivative
     @param underlying_value  The value of the underlying for the market price
