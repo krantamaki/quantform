@@ -3,10 +3,10 @@
 A submodule for computing the implied volatility surface for a given set of options
 """
 import numpy as np
-from tpying import List
+from typing import List
 
+from ..equity.derivative.Option import Option
 from .GenericSurface import GenericSurface
-from ..equity.instrument.Option import Option
 from ..QfDate import QfDate
 
 

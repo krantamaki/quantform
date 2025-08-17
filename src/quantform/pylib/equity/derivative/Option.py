@@ -8,7 +8,8 @@ from typing import Literal, Optional
 
 from .EquityDerivativeABC import EquityDerivativeABC
 from ...QfDate import QfDate
-from ..pricer import BlackScholesPricer, EquityPricerABC
+from ..pricer.BlackScholesPricer import BlackScholesPricer
+from ..pricer.EquityPricerABC import EquityPricerABC
 from ..utils import discount, form_option_id, parse_option_id
 
 

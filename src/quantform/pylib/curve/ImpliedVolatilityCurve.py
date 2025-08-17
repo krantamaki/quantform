@@ -5,8 +5,8 @@ A submodule for computing the implied volatility curve for a given set of option
 import numpy as np
 from typing import List
 
+from ..equity.derivative.Option import Option
 from .GenericCurve import GenericCurve
-from ..equity.instrument.Option import Option
 from ..QfDate import QfDate
 
 

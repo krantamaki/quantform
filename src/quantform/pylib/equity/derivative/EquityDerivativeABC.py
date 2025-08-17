@@ -8,8 +8,8 @@ from itertools import product
 import numpy as np
 
 from ...QfDate import QfDate
-from ...surface import GenericSurface
-from ..pricer import EquityPricerABC
+from ...surface.GenericSurface import GenericSurface
+from ..pricer.EquityPricerABC import EquityPricerABC
 
 
 class EquityDerivativeABC(ABC):
@@ -122,35 +122,4 @@ class EquityDerivativeABC(ABC):
     @return                  The gamma of the derivative
     """
     return self.pricer.gamma(underlying_value, report_date, *args, **kwargs)
-  
-  
-  def surface(self, n_points: Tuple[int, int], n_days_back: int = 252, max_underlying_value: Optional[int] = None,
-              end_date: Optional[QfDate] = None) -> GenericSurface:
-    """Method for computing the price surface for the derivative
-    
-    Method that generates a GenericSurface object from points computed using the derivatives pricer
-    
-    @param n_points     The number of points on the 'time to maturity' and 'underlying value' dimensions on which the surface is evaluated as a tuple
-    @param n_days_back  The number of days back from the maturity date for which the derivative is priced. Optional, defaults to 252 (one year in trading days)
-    @param max_strike   The maximum value of the underlying for which the derivative is priced. Optional, defaults to None i.e. 2 times the strike is used.
-                        If the derivative has no strike price the parameter must be specified
-    @param end_date     The end date for pricing. Optional, defaults to None i.e. the maturity date being used. If the derivative has no maturity date
-                        the parameter must be specified
-    @return             A GenericSurface object for the derivative prices
-    """
-    
-    max_underlying_value = max_underlying_value if max_underlying_value is not None else 2 * self.strike
-    end_date             = end_date if end_date is not None else self.maturity_date
-    
-    start_date = end_date - n_days_back
-    time_to_maturity = float(str(start_date.timedelta(end_date))[:4])
-    
-    xx = np.linspace(0, time_to_maturity, n_points[0])
-    yy = np.linspace(0, max_underlying_value, n_points[1])
-
-    xy = np.array(list(product(xx, yy)))
-    vals = np.array([self(tup[1], start_date * tup[0]) for tup in xy])    
-    
-    return GenericSurface(xy, vals)
-    
   
