@@ -8,7 +8,6 @@ from itertools import product
 import numpy as np
 
 from ...QfDate import QfDate
-from ...surface.GenericSurface import GenericSurface
 from ..pricer.EquityPricerABC import EquityPricerABC
 
 

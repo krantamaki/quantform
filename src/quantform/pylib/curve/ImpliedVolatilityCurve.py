@@ -6,6 +6,7 @@ import numpy as np
 from typing import List
 
 from ..equity.derivative.Option import Option
+from ..equity.pricer.BlackScholesPricer import BlackScholesPricer
 from .GenericCurve import GenericCurve
 from ..QfDate import QfDate
 
@@ -37,8 +38,12 @@ class ImpliedVolatilityCurve(GenericCurve):
     assert len(set([option.underlying for option in options])) == 1, f"The options must have the same underlying! (Found underlyings: {set([option.underlying for option in options])})"
     assert len(set([option.maturity_date for option in options])) == 1, f"The options must have the same maturity date! (Found maturity dates: {set([option.maturity_date for option in options])})"
 
-    volatilities = np.array([option.implied_volatility(underlying_value, report_date) for option in options])
-    strikes      = np.array([option.strike for option in options])
+    try:
+      volatilities = np.array([option.pricer.implied_volatility(option.market_price, underlying_value, report_date) for option in options])
+    except AttributeError as e:
+      assert False, f"Only BlackScholesPricer implements the implied volatility method! ({e})"
+    
+    strikes = np.array([option.strike for option in options])
     
     super().__init__(strikes, volatilities, apply_gaussian_filter=apply_gaussian_filter, gaussian_filter_sd=gaussian_filter_sd)
 

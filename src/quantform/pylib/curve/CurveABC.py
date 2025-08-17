@@ -38,7 +38,7 @@ class CurveABC(ABC):
     pass
   
 
-  def plot(self, n_points: int, value_range: Optional[Tuple[float, float]], fig: Optional[plt.Figure] = None, 
+  def plot(self, n_points: int, value_range: Optional[Tuple[float, float]] = None, fig: Optional[plt.Figure] = None, 
            ax: Optional[plt.Axes] = None, fmt: str = "", linewidth: float = 1.5, label: str = '', alpha: float = 1.,
            show_fig_legend: bool = False, save_as: Optional[str] = None, **kwargs) -> plt.Figure:
     """Plotting function

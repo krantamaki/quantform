@@ -87,6 +87,10 @@ class QfDate:
     return f"Date: {self}\nConvention: {self.__convention_name}\nCalendar: {self.__calendar_name}"
 
 
+  def __hash__(self) -> str:
+    return hash(repr(self))
+
+
   # Adding and subtracting return a new date object where the day has been changed by the given amount (under a given day count convention)
   def __add__(self, num: int) -> QfDate:
     """

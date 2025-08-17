@@ -41,7 +41,15 @@ class BlackScholesPricer(EquityPricerABC):
     self.__option_type   = type
     self.__strike        = strike
     self.__rf            = risk_free_rate
-    self.__vol           = volatility if volatility is not None else self.implied_volatility(market_price, underlying_value, report_date)
+    self.__vol           = volatility 
+    
+    self.__vol_type         = "Given"
+    self.__report_date      = report_date
+    self.__underlying_value = underlying_value
+    
+    if volatility is None:
+      self.__vol = self.implied_volatility(market_price, underlying_value, report_date)
+      self.__vol_type = "Implied"
     
     
   def __call__(self, underlying_value: float, report_date: QfDate, vol: Optional[float] = None) -> float:
@@ -73,6 +81,11 @@ class BlackScholesPricer(EquityPricerABC):
     return f"Black-Scholes Pricer\nOption Type: {self.__option_type}\nMaturity Date: {self.__maturity_date}\nStrike: {self.__strike}\nRisk-free Rate: {self.__rf}\nVolatility: {self.__vol}"
   
   
+  @property
+  def volatility(self) -> float:
+    return self.__vol
+  
+  
   def delta(self, underlying_value: float, report_date: QfDate) -> float:
     return norm.cdf(self.d_plus(underlying_value, report_date))
   
@@ -98,6 +111,9 @@ class BlackScholesPricer(EquityPricerABC):
     @param report_date       The date for the market price and the underlying value
     @return                  The implied volatility
     """
+    
+    if (self.__vol_type == "Implied") and (self.__report_date == report_date) and (self.__underlying_value == underlying_value):
+      return self.__vol
     
     diff_func = self._diff_factory(market_price, underlying_value, report_date)
     

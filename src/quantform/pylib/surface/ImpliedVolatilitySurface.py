@@ -38,9 +38,13 @@ class ImpliedVolatilitySurface(GenericSurface):
     assert len(set([option.underlying for option in options])) == 1, f"The options must have the same underlying! (Found underlyings: {set([option.underlying for option in options])})"
   
     # Note that the order doesn't matter as the GenericSurface object will sort the arrays anyways
-    volatilities = np.array([option.implied_volatility(underlying_value, report_date) for option in options])
-    strikes      = np.array([option.strike for option in options])
-    taus         = np.array([report_date.time_delta(option.maturity_date, convention = "trading") for option in options])
+    try:
+      volatilities = np.array([option.pricer.implied_volatility(option.market_price, underlying_value, report_date) for option in options])
+    except AttributeError as e:
+      assert False, f"Only BlackScholesPricer implements the implied volatility method! ({e})"
+      
+    strikes      = np.array([option.strike for option in options]).reshape(-1, 1)
+    taus         = np.array([report_date.timedelta(option.maturity_date) for option in options]).reshape(-1, 1)
     
-    super.__init__(np.append(strikes, taus, 1), volatilities, apply_gaussian_filter=apply_gaussian_filter, gaussian_filter_sd=gaussian_filter_sd)
+    super().__init__(np.hstack((strikes, taus)), volatilities, apply_gaussian_filter=apply_gaussian_filter, gaussian_filter_sd=gaussian_filter_sd)
 
