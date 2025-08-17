@@ -37,6 +37,13 @@ class EquityPricerABC(ABC):
     """Exhaustive string representation"""
     pass
   
+  
+  @property
+  @abstractmethod
+  def volatility(self) -> float:
+    """The volatility"""
+    pass
+  
 
   @abstractmethod
   def delta(self, underlying_value: float, report_date: QfDate, *args: List[any], **kwargs: Dict[any, any]) -> float:
