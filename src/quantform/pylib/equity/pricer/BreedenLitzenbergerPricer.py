@@ -1,11 +1,12 @@
 """
 TODO
 """
-from typing import List, Dict, Literal
+from typing import List, Dict, Literal, Optional, Callable, Tuple
 
 from .EquityPricerABC import EquityPricerABC
 from .BlackScholesPricer import BlackScholesPricer
-from ...curve import ProbabilityDensityCurve
+from ...surface import ImpliedVolatilitySurface
+from ...curve import ProbabilityDensityCurve, DiscountCurve
 from ...QfDate import QfDate
 
 
@@ -13,7 +14,7 @@ class BreedenLitzenbergerPricer(EquityPricerABC):
   """
   """
   
-  def __init__(self, volatility_surface: ImpliedVolatilitySurface, option_pricer: Literal["BlackScholes"], risk_free_rate: float,  
+  def __init__(self, volatility_surface: ImpliedVolatilitySurface, option_pricer: Literal["BlackScholes"], discount_curve: DiscountCurve,
                maturity_date: Optional[QfDate] = None, expiration_boundary: Optional[Callable[[float], float]] = None,
                upper_boundary: Optional[Callable[[float], Tuple[float, float]]] = None, 
                lower_boundary: Optional[Callable[[float], Tuple[float, float]]] = None) -> None:
