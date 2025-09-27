@@ -199,6 +199,19 @@ class QfDate:
     
     return self.__convention(other_date, self)
   
+
+  def convention_delta(self, other_date: QfDate,
+                       convention: Literal["30/360", "ACT/365", "ACT/360", "Business/252"]) -> float:
+    """
+    TODO
+    """
+    assert convention in _convention_map, f"Invalid day count convention specified! ({convention} not in ['30/360', 'ACT/365', 'ACT/360', 'Business/252'])"
+
+    if self > other_date:
+      return -_convention_map[convention](self, other_date)
+    
+    return _convention_map[convention](other_date, self)
+  
   
   @comparable
   def days_until(self, other_date: QfDate) -> int:

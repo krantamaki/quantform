@@ -5,10 +5,11 @@ Submodule with a very basic analytical Black-Scholes pricer
 from typing import Optional, Literal
 import numpy as np
 from scipy.stats import norm
+from scipy.optimize import root_scalar
 
 from .EquityPricerABC import EquityPricerABC
 from ...QfDate import QfDate
-from ..utils import bisection_method, discount
+from ..utils import discount
 
 
 class BlackScholesPricer(EquityPricerABC):
@@ -31,10 +32,11 @@ class BlackScholesPricer(EquityPricerABC):
     @param market_price      The market price for the option. Optional, defaults to None
     @param underlying_value  The value of the underlying for the market price. Optional, defaults to None
     @param report_date       The date for the market price and the underlying value. Optional, defaults to None
+    @raises AssertionError   Raised if the maturity date doesn't use 'Business/252' convention
     @raises AssertionError   Raised if volatility is not given and cannot be computed
     @return                  None
     """
-    
+    assert maturity_date.convention == "Business/252", f"Maturity date has an invalid day count convention! ({maturity_date.convention} != 'Business/252')"
     assert (volatility is not None) or ((market_price is not None) and (underlying_value is not None) and (report_date is not None)), "Either volatility or market parameters need to be defined!"
 
     self.__maturity_date = maturity_date
@@ -126,7 +128,7 @@ class BlackScholesPricer(EquityPricerABC):
 
     assert upper < 100, "Implied volatility can't be calculated as the difference is not positive for any upped bound!"
 
-    implied_vol = bisection_method(diff_func, lower, upper)
+    implied_vol = root_scalar(diff_func, method="bisect", bracket=(lower, upper))
 
     return implied_vol
   
