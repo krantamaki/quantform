@@ -30,7 +30,7 @@ class Option(EquityDerivativeABC):
     @param strike            The strike price of the option
     @param risk_free_rate    The prevailing risk-free rate
     @param volatility        The volatility of the underlying. Optional, defaults to None
-    @param pricer            The name of the wanted pricer method
+    @param pricer            The name of the wanted pricer method. Optional, defaults to 'BlackScholes'
     @param market_price      The market price for the option. Optional, defaults to None
     @param underlying_value  The value of the underlying for the market price. Optional, defaults to None
     @param report_date       The date for the market price and the underlying value. Optional, defaults to None
@@ -76,12 +76,12 @@ class Option(EquityDerivativeABC):
   
   
   @property
-  def maturity_date(self) -> Optional[QfDate]:
+  def maturity_date(self) -> QfDate:
     return self.__maturity_date
   
   
   @property
-  def strike(self) -> Optional[float]:
+  def strike(self) -> float:
     return self.__strike
   
   
