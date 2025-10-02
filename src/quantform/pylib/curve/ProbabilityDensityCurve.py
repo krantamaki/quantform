@@ -52,12 +52,12 @@ class ProbabilityDensityCurve(CurveABC):
   
   @property
   def max(self) -> float:
-    return max(self.__max)
+    return self.__max
 
 
   @property
   def min(self) -> float:
-    return min(self.__min)
+    return self.__min
   
   
   @property
@@ -110,4 +110,16 @@ class ProbabilityDensityCurve(CurveABC):
     integrand = lambda x: (x - c) ** n * self(x)
     
     return quad(integrand, self.__min, self.__max)[0]
-
+  
+  
+  def interval(self, start: float, end: float) -> float:
+    """Cumulative density on interval [<start>, <end>]
+    
+    TODO
+    
+    """
+    assert (start >= self.min) and (start <= self.max), f"Given value outside of value range! ('start' = {start} not between {self.min} and {self.max})"
+    assert (end >= self.min) and (end <= self.max), f"Given value outside of value range! ('end' = {end} not between {self.min} and {self.max})" 
+    assert start <= end, f"The interval start must be before the interval end! ({start} > {end})" 
+     
+    return quad(self.__interpolator, start, end)[0]
