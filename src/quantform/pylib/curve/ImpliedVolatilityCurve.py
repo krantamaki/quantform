@@ -5,8 +5,8 @@ A submodule for computing the implied volatility curve for a given set of option
 import numpy as np
 from typing import List
 
-from ..equity.derivative.Option import Option
-from ..equity.pricer.BlackScholesPricer import BlackScholesPricer
+# from ..equity.derivative.Option import Option
+# from ..equity.pricer.BlackScholesPricer import BlackScholesPricer
 from .GenericCurve import GenericCurve
 from ..QfDate import QfDate
 
@@ -14,7 +14,7 @@ from ..QfDate import QfDate
 class ImpliedVolatilityCurve(GenericCurve):
   """Implied volatility curve calculated from a set of options"""
   
-  def __init__(self, options: List[Option], underlying_value: float, report_date: QfDate, apply_gaussian_filter: bool = False, 
+  def __init__(self, options: List[callable], underlying_value: float, report_date: QfDate, apply_gaussian_filter: bool = False, 
                gaussian_filter_sd: float = 2.) -> None:
     """Constructor method
     
@@ -45,5 +45,6 @@ class ImpliedVolatilityCurve(GenericCurve):
     
     strikes = np.array([option.strike for option in options])
     
-    super().__init__(strikes, volatilities, apply_gaussian_filter=apply_gaussian_filter, gaussian_filter_sd=gaussian_filter_sd)
+    # Note that constant extrapolation is used. This is in line with discussion by Carr and Wu (2008) (https://academic.oup.com/rfs/article-abstract/22/3/1311/1581057)
+    super().__init__(strikes, volatilities, apply_gaussian_filter=apply_gaussian_filter, gaussian_filter_sd=gaussian_filter_sd, extrapolation_method="Constant")
 
