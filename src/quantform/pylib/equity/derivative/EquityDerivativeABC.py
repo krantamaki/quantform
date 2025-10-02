@@ -14,7 +14,7 @@ from ..pricer.EquityPricerABC import EquityPricerABC
 class EquityDerivativeABC(ABC):
   """Abstract base class for equity derivatives"""
   
-  def __call__(self, underlying_value: float, report_date: QfDate, *args: List[any], **kwargs: Dict[any, any]) -> float:
+  def __call__(self, underlying_value: float, report_date: QfDate, **kwargs: Dict[any, any]) -> float:
     """Call method
     
     Call method that calculates the price for the derivative given the value of the underlying and the valuation date.
@@ -22,11 +22,10 @@ class EquityDerivativeABC(ABC):
     
     @param underlying_value  The value of the underlying security
     @param report_date       The valuation date
-    @*args                   Additional class specific arguments
     @**kwargs                Additional class specific keyword arguments
     @return                  The value of the derivative
     """
-    return self.pricer(underlying_value, report_date, *args, **kwargs)
+    return self.pricer(underlying_value, report_date, **kwargs)
   
   
   def __str__(self) -> str:
@@ -81,44 +80,41 @@ class EquityDerivativeABC(ABC):
     pass
   
   
-  def delta(self, underlying_value: float, report_date: QfDate, *args: List[any], **kwargs: Dict[any, any]) -> float:
+  def delta(self, underlying_value: float, report_date: QfDate, **kwargs: Dict[any, any]) -> float:
     """The delta of the derivative
     
     Calculates the delta (sensitivity to the value of the underlying) for the derivative
     
     @param underlying_value  The value of the underlying security
     @param report_date       The valuation date
-    @*args                   Additional class specific arguments
     @**kwargs                Additional class specific keyword arguments
     @return                  The delta of the derivative
     """
-    return self.pricer.delta(underlying_value, report_date, *args, **kwargs)
+    return self.pricer.delta(underlying_value, report_date, **kwargs)
   
   
-  def vega(self, underlying_value: float, report_date: QfDate, *args: List[any], **kwargs: Dict[any, any]) -> float:
+  def vega(self, underlying_value: float, report_date: QfDate,**kwargs: Dict[any, any]) -> float:
     """The vega of the derivative
     
     Calculates the vega (sensitivity to the volatility) for the derivative
     
     @param underlying_value  The value of the underlying security
     @param report_date       The valuation date
-    @*args                   Additional class specific arguments
     @**kwargs                Additional class specific keyword arguments
     @return                  The vega of the derivative
     """
-    return self.pricer.vega(underlying_value, report_date, *args, **kwargs)
+    return self.pricer.vega(underlying_value, report_date, **kwargs)
   
   
-  def gamma(self, underlying_value: float, report_date: QfDate, *args: List[any], **kwargs: Dict[any, any]) -> float:
+  def gamma(self, underlying_value: float, report_date: QfDate, **kwargs: Dict[any, any]) -> float:
     """The gamma of the derivative
     
     Calculates the gamma (sensitivity to the delta) for the derivative
     
     @param underlying_value  The value of the underlying security
     @param report_date       The valuation date
-    @*args                   Additional class specific arguments
     @**kwargs                Additional class specific keyword arguments
     @return                  The gamma of the derivative
     """
-    return self.pricer.gamma(underlying_value, report_date, *args, **kwargs)
+    return self.pricer.gamma(underlying_value, report_date, **kwargs)
   
