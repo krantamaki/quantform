@@ -128,7 +128,7 @@ class BlackScholesPricer(EquityPricerABC):
 
     assert upper < 100, "Implied volatility can't be calculated as the difference is not positive for any upped bound!"
 
-    implied_vol = root_scalar(diff_func, method="bisect", bracket=(lower, upper))
+    implied_vol = root_scalar(diff_func, method="bisect", bracket=(lower, upper)).root
 
     return implied_vol
   

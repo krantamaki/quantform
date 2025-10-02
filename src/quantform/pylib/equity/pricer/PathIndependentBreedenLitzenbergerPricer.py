@@ -1,10 +1,12 @@
-"""@package quantform.pylib.equity.pricer.class PathIndependentBreedenLitzenbergerPricer
+"""@package quantform.pylib.equity.pricer.PathIndependentBreedenLitzenbergerPricer
 @author Kasper Rantamäki
 Submodule with a Breeden-Litzenberger pricer for path-independent exotics
 value of which is derived from the stock price process at the maturity of the contract
 """
-from typing import Callable, Literal
+import numpy as np
+from typing import Callable, Literal, Optional, Tuple
 from scipy.integrate import quad
+from scipy.stats import norm
 
 from .EquityPricerABC import EquityPricerABC
 from .BlackScholesPricer import BlackScholesPricer
@@ -45,14 +47,16 @@ class PathIndependentBreedenLitzenbergerPricer(EquityPricerABC):
       raise ValueError(f"Invalid option pricer specified! ({option_pricer} not in ['BlackScholes'])")
 
 
-  def __call__(self, underlying_value: float, report_date: QfDate) -> float:
+  def __call__(self, underlying_value: float, report_date: QfDate, integration_interval: Optional[Tuple[float, float]] = None) -> float:
     """
     """
+    if integration_interval is None:
+      integration_interval = (0, self.__vol.max * 1.5)
     
     def integrand(x: float) -> float:
       return self.__payoff(x) * self.__pricer(self.__maturity_date, 'Call', x, self.__rf, self.__vol(x)).gamma(underlying_value, report_date)
     
-    return quad(integrand, 0, self.__vol.max * 2)[0]
+    return quad(integrand, integration_interval[0], integration_interval[1])[0]
 
 
   def __str__(self) -> str:
@@ -65,38 +69,68 @@ class PathIndependentBreedenLitzenbergerPricer(EquityPricerABC):
     """
     """
     pass
+  
+  
+  @property
+  def volatility(self) -> float:
+    raise NotImplementedError("Not applicable")
 
 
-  def delta(self, underlying_value: float, report_date: QfDate) -> float:
+  def delta(self, underlying_value: float, report_date: QfDate, integration_interval: Optional[Tuple[float, float]] = None) -> float:
     """
     """
-    pass
+    if integration_interval is None:
+      integration_interval = (0, self.__vol.max * 1.5)
+    
+    def integrand(x: float) -> float:
+      vol = self.__vol(x)
+      d_plus = self.__pricer(self.__maturity_date, 'Call', x, self.__rf, vol).d_plus(underlying_value, report_date)
+      timedelta = report_date.timedelta(self.__maturity_date)
+      
+      return -self.__payoff(x) * (d_plus * norm.pdf(d_plus) + vol * np.sqrt(timedelta) * norm.pdf(d_plus)) \
+        / np.square(underlying_value * vol * np.sqrt(timedelta))
+    
+    return quad(integrand, integration_interval[0], integration_interval[1])[0]
 
 
-  def gamma(self, underlying_value: float, report_date: QfDate) -> float:
+  def gamma(self, underlying_value: float, report_date: QfDate, integration_interval: Optional[Tuple[float, float]] = None) -> float:
     """
     """
-    pass
+    raise NotImplementedError("The gamma has not been implemented yet!")
 
 
-  def vega(self, underlying_value: float, report_date: QfDate) -> float:
+  def vega(self, underlying_value: float, report_date: QfDate, integration_interval: Optional[Tuple[float, float]] = None) -> float:
     """
     """
-    pass
+    if integration_interval is None:
+      integration_interval = (0, self.__vol.max * 1.5)
+    
+    def integrand(x: float) -> float:
+      vol = self.__vol(x)
+      d_plus = self.__pricer(self.__maturity_date, 'Call', x, self.__rf, vol).d_plus(underlying_value, report_date)
+      timedelta = report_date.timedelta(self.__maturity_date)
+      
+      return -self.__payoff(x) * (vol * d_plus * norm.pdf(d_plus) * (d_plus / vol - np.sqrt(timedelta)) - norm.pdf(d_plus)) \
+        / (underlying_value * np.sqrt(timedelta) * np.square(vol))
+    
+    return quad(integrand, integration_interval[0], integration_interval[1])[0]
 
 
-  def implied_density(self, underlying_value: float, report_date: QfDate) -> ProbabilityDensityCurve:
+  def implied_density(self, underlying_value: float, report_date: QfDate, integration_interval: Optional[Tuple[float, float]] = None) -> ProbabilityDensityCurve:
     """
     
     """
+    if integration_interval is None:
+      integration_interval = (0, self.__vol.max * 1.5)
+    
     def unnorm_pdf(x: float) -> float:
       return self.__pricer(self.__maturity_date, 'Call', x, self.__rf, self.__vol(x)).gamma(underlying_value, report_date) / discount(self.__rf, report_date.timedelta(self.__maturity_date))
     
-    norm_factor = 1 / quad(unnorm_pdf, 0, self.__vol.max * 2)[0]
+    norm_factor = 1 / quad(unnorm_pdf, integration_interval[0], integration_interval[1])[0]
 
     def pdf(x: float) -> float:
       return norm_factor * unnorm_pdf(x)
     
-    return ProbabilityDensityCurve(pdf, (0, self.__vol.max * 2))
+    return ProbabilityDensityCurve(pdf, (integration_interval[0], integration_interval[1]))
 
 
