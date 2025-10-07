@@ -5,6 +5,10 @@ src/tasks/*.py
 *.o
 *.exe
 
+# Ignore shared object files
+*.so
+*.dll
+
 # Ignore pycache
 *__pycache__
 
