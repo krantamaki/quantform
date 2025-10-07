@@ -2,6 +2,7 @@
 @author Kasper Rantamäki
 Submodule for an abstact base class for equity derivatives
 """
+from __future__ import annotations
 from typing import Optional, Tuple, List, Dict
 from abc import ABC, abstractmethod
 from itertools import product
@@ -36,6 +37,31 @@ class EquityDerivativeABC(ABC):
   def __repr__(self) -> str:
     """Exhaustive string representation"""
     return f"Contract: {self.contract_id}\nPricer: {repr(self.pricer)}"
+  
+  
+  def __ge__(self, other: EquityDerivativeABC) -> bool:
+    """Greater than or equal to comparison"""
+    return str(self) >= str(other)
+  
+  
+  def __le__(self, other: EquityDerivativeABC) -> bool:
+    """Less than or equal to comparison"""
+    return str(self) <= str(other)
+  
+  
+  def __gt__(self, other: EquityDerivativeABC) -> bool:
+    """Greater than comparison"""
+    return str(self) > str(other)
+  
+  
+  def __lt__(self, other: EquityDerivativeABC) -> bool:
+    """Less than comparison"""
+    return str(self) < str(other)
+  
+  
+  def __eq__(self, other: EquityDerivativeABC) -> bool:
+    """Equality comparison"""
+    return str(self) == str(other)
   
   
   @property

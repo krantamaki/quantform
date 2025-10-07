@@ -2,6 +2,7 @@
 @author Kasper Rantamäki
 Submodule with an abstract base class for equity derivative pricers
 """
+from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import List, Dict, Callable
 
@@ -36,6 +37,31 @@ class EquityPricerABC(ABC):
   def __repr__(self) -> str:
     """Exhaustive string representation"""
     pass
+  
+  
+  def __ge__(self, other: EquityPricerABC) -> bool:
+    """Greater than or equal to comparison"""
+    return repr(self) >= repr(other)
+  
+  
+  def __le__(self, other: EquityPricerABC) -> bool:
+    """Less than or equal to comparison"""
+    return repr(self) <= repr(other)
+  
+  
+  def __gt__(self, other: EquityPricerABC) -> bool:
+    """Greater than comparison"""
+    return repr(self) > repr(other)
+  
+  
+  def __lt__(self, other: EquityPricerABC) -> bool:
+    """Less than comparison"""
+    return repr(self) < repr(other)
+  
+  
+  def __eq__(self, other: EquityPricerABC) -> bool:
+    """Equality comparison"""
+    return repr(self) == repr(other)
   
   
   @property
