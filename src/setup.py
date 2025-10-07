@@ -6,12 +6,18 @@ The setup script does a couple of things needed before running the main file. It
 compiles the C++ libraries, runs tests and if everything is successful, it adds the 
 quantform into the Python site-packages directory so that it can be imported as a library.
 """
-import os
+import subprocess
 from setuptools import setup, find_packages
 
 
 # Compile the C++ functionality
-pass
+proc = subprocess.run("g++ -c -fPIC -static -std=c++17 -mavx -fopenmp -Wall quantform/cpplib/linsolve.cpp -lm -o quantform/cpplib/linsolve.o".split(' '), capture_output=True)
+if proc.returncode == 0:
+  proc = subprocess.run("g++ -shared -o quantform/cpplib/linsolve.so quantform/cpplib/linsolve.o -lgomp".split(' '), capture_output=True)
+else:
+  raise RuntimeError(f"Could not compile the 'linsolve' submodule! Cause:\n{proc.stdout}")
+if proc.returncode != 0:
+  raise RuntimeError(f"Could not convert the 'linsolve' submodule into a shared object! Cause:\n{proc.stdout}")
 
 
 # Run the setup
