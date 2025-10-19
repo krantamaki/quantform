@@ -55,8 +55,9 @@ class BlackScholesPricer(EquityPricerABC):
     
     
   def __call__(self, underlying_value: float, report_date: QfDate, vol: Optional[float] = None) -> float:
-    
-    assert self.__maturity_date >= report_date, f"Report date must be at most maturity date! ({report_date} > {self.__maturity_date})"
+    if report_date > self.__maturity_date:
+      # Expired option is worthless
+      return 0
   
     if self.__maturity_date == report_date: 
       if self.__option_type == 'Call': return max(0, underlying_value - self.__strike)
@@ -89,15 +90,27 @@ class BlackScholesPricer(EquityPricerABC):
   
   
   def delta(self, underlying_value: float, report_date: QfDate) -> float:
+    if report_date > self.__maturity_date:
+      # Expired option has no sensitivities
+      return 0
+    
     return norm.cdf(self.d_plus(underlying_value, report_date))
   
   
   def vega(self, underlying_value: float, report_date: QfDate) -> float:
+    if report_date > self.__maturity_date:
+      # Expired option has no sensitivities
+      return 0
+    
     return underlying_value * np.exp(-self.d_plus(underlying_value, report_date) ** 2 / 2) * \
            np.sqrt(report_date.timedelta(self.__maturity_date)) / np.sqrt(2 * np.pi)
             
   
   def gamma(self, underlying_value: float, report_date: QfDate) -> float:
+    if report_date > self.__maturity_date:
+      # Expired option has no sensitivities
+      return 0
+    
     return self.__strike * discount(self.__rf, report_date.timedelta(self.__maturity_date)) * \
            norm.pdf(self.d_minus(underlying_value, report_date)) / (underlying_value ** 2 * self.__vol * \
            np.sqrt(report_date.timedelta(self.__maturity_date)))
@@ -113,6 +126,7 @@ class BlackScholesPricer(EquityPricerABC):
     @param report_date       The date for the market price and the underlying value
     @return                  The implied volatility
     """
+    assert self.__maturity_date >= report_date, f"Report date must be at most maturity date! ({report_date} > {self.__maturity_date})"
     
     if (self.__vol_type == "Implied") and (self.__report_date == report_date) and (self.__underlying_value == underlying_value):
       return self.__vol

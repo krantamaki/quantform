@@ -14,8 +14,10 @@ from ..QfDate import QfDate
 class PriceSurface(GenericSurface):
   """Price surface calculated for a given derivative"""
   
-  def __init__(self, derivative: EquityDerivativeABC, n_points: Tuple[int, int], n_days_back: int = 252, max_underlying_value: Optional[int] = None,
-              end_date: Optional[QfDate] = None) -> None:
+  def __init__(self, derivative: EquityDerivativeABC, n_points: Tuple[int, int], n_days_back: int = 252, 
+               max_underlying_value: Optional[int] = None,
+               min_underlying_value: int = 0,
+               end_date: Optional[QfDate] = None) -> None:
     """Constructor method
     
     Constructor method that calculates the value of the given derivative in the specified points and initializes a CloughTocher2DInterpolator object based 
@@ -36,7 +38,7 @@ class PriceSurface(GenericSurface):
     time_to_maturity = float(str(start_date.timedelta(end_date))[:4])
     
     xx = np.linspace(0, time_to_maturity, n_points[0])
-    yy = np.linspace(0, max_underlying_value, n_points[1])
+    yy = np.linspace(min_underlying_value, max_underlying_value, n_points[1])
 
     xy = np.array(list(product(xx, yy)))
     vals = np.array([derivative(tup[1], start_date * tup[0]) for tup in xy]) 
