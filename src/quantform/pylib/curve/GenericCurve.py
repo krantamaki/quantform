@@ -33,14 +33,21 @@ class GenericCurve(CurveABC):
     assert len(x_values) == len(y_values), f"The arrays must have the same dimensions! ({len(x_values)} != {len(y_values)})"
     assert extrapolation_method.lower() in ["cubicspline", "constant"], f"Invalid extrapolation method specified! {extrapolation_method} not in ['CubicSpline', 'Constant']"
 
-    self.__x = x_values
-    self.__y = y_values
+    self.__x = np.array(x_values)
+    self.__y = np.array(y_values)
     self.__extrapolation_method = extrapolation_method
     
     self.__gaussian_sd = gaussian_filter_sd
     
     if apply_gaussian_filter:
-      self.__y = gaussian_filter1d(self.__y, self.__gaussian_sd)
+      # The extrapolation method is "Constant" extend the point arrays in both directions with constant values to smooth the transition to extrapolation
+      if extrapolation_method.lower() == "constant":
+        point_dist = np.mean(np.diff(self.__x))
+        self.__x = np.concat([np.linspace(max(0, self.__x[0] - point_dist * 11), self.__x[0] - point_dist, 10), self.__x, np.linspace(self.__x[-1] + point_dist, self.__x[-1] + point_dist * 11, 10)])
+        self.__y = np.concat([np.array([self.__y[0]] * 10), self.__y, np.array([self.__y[-1]] * 10)])
+        self.__y = gaussian_filter1d(self.__y, self.__gaussian_sd)
+      else:
+        self.__y = gaussian_filter1d(self.__y, self.__gaussian_sd)
     
     self.__interpolator = CubicSpline(self.__x, self.__y)
     
