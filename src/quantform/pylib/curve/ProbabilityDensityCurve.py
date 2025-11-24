@@ -27,8 +27,8 @@ class ProbabilityDensityCurve(CurveABC):
     self.__min = value_range[0]
     self.__max = value_range[1]
     
-    self.__mean = None
-    self.__std  = None
+    self.__mean = self.moment(1)
+    self.__var  = None
     self.__skew = None
     self.__kurt = None
 
@@ -72,14 +72,14 @@ class ProbabilityDensityCurve(CurveABC):
   
   
   @property
-  def std(self) -> float:
+  def variance(self) -> float:
     """
     TODO
     """
-    if self.__std is None:
-      self.__std = self.moment(2)
+    if self.__var is None:
+      self.__var = self.moment(2, self.__mean)
     
-    return self.__std
+    return self.__var
   
   
   @property
@@ -88,7 +88,7 @@ class ProbabilityDensityCurve(CurveABC):
     TODO
     """
     if self.__skew is None:
-      self.__skew = self.moment(3)
+      self.__skew = self.moment(3, self.__mean)
       
     return self.__skew
   
@@ -99,7 +99,7 @@ class ProbabilityDensityCurve(CurveABC):
     TODO
     """
     if self.__kurt is None:
-      self.__kurt = self.moment(4)
+      self.__kurt = self.moment(4, self.__mean)
     
     return self.__kurt
   
